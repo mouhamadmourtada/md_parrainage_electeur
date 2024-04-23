@@ -1,16 +1,25 @@
 "use client";
 
+import { activerCompte, creerCompte } from "@/lib/query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { FaPhoneAlt, FaIdCardAlt, FaRegIdCard } from "react-icons/fa";
+import {
+  FaPhoneAlt,
+  FaIdCardAlt,
+  FaRegIdCard,
+  FaMailBulk,
+} from "react-icons/fa";
 
 export default function Activation() {
   const router = useRouter();
   const [showAdditionalInputs, setShowAdditionalInputs] = useState(false);
+  const [error, setError] = useState(false);
+  const [electeur, setElecteur] = useState({});
+
   const [inputValues, setInputValues] = useState({
-    voterCard: "",
-    identityCard: "",
-    lastName: "",
+    numElecteur: "",
+    cin: "",
+    nom: "",
     email: "",
     phoneNumber: "",
   });
@@ -22,13 +31,46 @@ export default function Activation() {
     }));
   };
 
-  const handleActivation = () => {
+  const handleActivation = async () => {
     if (showAdditionalInputs) {
-        console.log(inputValues);
-    }else
-    setShowAdditionalInputs(true);
-  };
+      // Envoi du formulaire complet
+      try {
+        const response = await creerCompte(inputValues,electeur?.ID);
+        console.log("REPONSE FINALE", response);
+        if (response?.data?.status === 400) {
+          //Cas d'erreur
 
+          setError(true);
+        } else {
+          //Cas de succes
+          router.push("/")
+          setError(false);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      try {
+        const response = await activerCompte({
+          numElecteur: inputValues?.numElecteur,
+          cin: inputValues?.cin,
+          nom: inputValues?.nom,
+        });
+        if (response?.data?.status === 400) {
+          //Cas d'erreur
+          setError(true);
+        } else {
+          //Cas de succes
+          console.log("ELECTEUR" + JSON.stringify(response?.data?.electeur));
+          setElecteur(response?.data?.electeur);
+          setShowAdditionalInputs(true);
+          setError(false);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
 
   return (
     <div className="py-4 px-4 flex flex-col h-screen bg-white text-xl font-bold bg-gradient-to-br from-green-100 to-cyan-200">
@@ -48,12 +90,11 @@ export default function Activation() {
         <label className="input input-bordered flex items-center gap-2">
           <FaIdCardAlt size={14} color="#444" />
           <input
-
-            type={showAdditionalInputs?"button":"text"}
+            type={showAdditionalInputs ? "button" : "text"}
             // readOnly={showAdditionalInputs}
-            value={inputValues.voterCard}
-            onChange={(e) => handleInputChange("voterCard", e.target.value)}
-            style={{userSelect:"none"}}
+            value={inputValues.numElecteur}
+            onChange={(e) => handleInputChange("numElecteur", e.target.value)}
+            style={{ userSelect: "none" }}
             className="grow text-sm md:text-base"
             placeholder="N° Carte Electeur"
           />
@@ -63,11 +104,10 @@ export default function Activation() {
         <label className="input input-bordered flex items-center gap-2">
           <FaRegIdCard size={14} color="#444" />
           <input
-            type={showAdditionalInputs?"button":"text"}
+            type={showAdditionalInputs ? "button" : "text"}
             readOnly={showAdditionalInputs}
-
-            value={inputValues.identityCard}
-            onChange={(e) => handleInputChange("identityCard", e.target.value)}
+            value={inputValues?.cin}
+            onChange={(e) => handleInputChange("cin", e.target.value)}
             className="grow text-sm md:text-base"
             placeholder="N° Carte d'identité (NIN)"
           />
@@ -83,27 +123,26 @@ export default function Activation() {
             <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0 c.-22-.578-.254 1.139.872 1.139h9.47Z" />
           </svg>
           <input
-            type={showAdditionalInputs?"button":"text"}
+            type={showAdditionalInputs ? "button" : "text"}
             readOnly={showAdditionalInputs}
-            value={inputValues.lastName}
-            onChange={(e) => handleInputChange("lastName", e.target.value)}
+            value={inputValues?.nom}
+            onChange={(e) => handleInputChange("nom", e.target.value)}
             className="grow text-sm md:text-base"
             placeholder="Nom de Famille"
           />
         </label>
+        {error && (
+          <span className="text-red-600 text-sm">
+            Vous n'etes pas dans la liste electeur
+          </span>
+        )}
 
         {showAdditionalInputs && (
           <>
             {/* Adresse Email */}
             <label className="input input-bordered flex items-center gap-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 16 16"
-                fill="currentColor"
-                className="w-4 h-4 opacity-70"
-              >
-                <path d="M2.5 3A1.5 1.5 0 0 0 1 4.5v.793c.026.009.051.02.076.032L7.674 8.51c.206.1.446.1.652 0l6.598-3.185A.755.755 0 0 1 15 5.293V4.5A1.5 1.5 0 0 0 13.5 3h-11Z" />
-              </svg>
+              <FaMailBulk size={14} color="#444" />
+
               <input
                 type="text"
                 value={inputValues.email}
@@ -119,7 +158,9 @@ export default function Activation() {
               <input
                 type="text"
                 value={inputValues.phoneNumber}
-                onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("phoneNumber", e.target.value)
+                }
                 class="grow text-sm md:text-base"
                 placeholder="Numéro de téléphone"
               />
