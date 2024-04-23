@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { FaIdCardAlt, FaKey, FaKeybase, FaRegIdCard } from "react-icons/fa";
 import gsap from "gsap";
-import { verifierActivation, verifierAuthentification } from "@/lib/query";
+import { verifierActivation, verifierAuthentification, verifierParrainage } from "@/lib/query";
 import { useRouter } from "next/navigation";
 
 var tl = gsap.timeline();
@@ -16,12 +16,15 @@ export default function Home() {
   const [isParrainerModalOpen, setIsParrainerModalOpen] = useState(false);
   const [nextStep, setNextStep] = useState(false);
   const [verifiedElecteur,setVerifiedElecteur] = useState({})
+  const [verificationFlow,setVerificationFlow] = useState(false);
   const [inputValues, setInputValues] = useState({
     numElecteur: "",
     cin: "",
-    codeAuth:""
+    codeAuth:"",
+    codeVerification:""
   });
   const [error, setError] = useState(false)
+  const [parrainageSuccess, setParrainageSuccess] = useState(false)
 
   const handleInputChange = (field, value) => {
     setInputValues((prev) => ({
@@ -31,6 +34,30 @@ export default function Home() {
   };
   //handle verification
   const handleVerification = async () => {
+    if (verificationFlow) {
+
+      try {
+        //Verification authentification
+          response = await verifierParrainage({numElecteur:localStorage.getItem("infosParrainage")?.numElecteur,codeVerification:inputValues?.codeVerification});
+          console.log(response.data);
+          if (response?.data?.status != 200) {
+            //Cas d'erreur
+            alert("Code de verificaiton incorrect")
+            setError(true);
+          } else {
+            //Cas de succes: le parrainage est reussit
+            alert("PARRAINAGE REUSSIT")
+            setParrainageSuccess(true)
+            setError(false);
+          }
+  
+      } catch (error) {
+        console.log(error);
+      }
+      return;
+    }
+
+
     // Envoi du formulaire complet
     try {
       //Verification authentification
@@ -42,7 +69,7 @@ export default function Home() {
           setError(true);
         } else {
           //Cas de succes: passer au formulaire suivant
-          localStorage.setItem("infosParrainage",JSON.stringify({...response?.data,inputValues}))
+          localStorage.setItem("infosParrainage",JSON.stringify({...response?.data,...inputValues}))
           router.push("/parrainage")
           setError(false);
         }
@@ -63,6 +90,11 @@ export default function Home() {
     } catch (error) {
       console.log(error);
     }
+  }
+
+  const clickVerifierParrainage = ()=>{
+    setIsModalOpen(true);
+    setVerificationFlow(true)
   }
   //Animation
   useEffect(() => {
@@ -114,26 +146,20 @@ export default function Home() {
                   <input
                     type="text"
                     style={{ userSelect: "none" }}
+                    value={inputValues?.codeVerification}
+                    onChange={(e) =>
+                      handleInputChange("codeVerification", e.target.value)
+                    }
                     className="grow text-sm md:text-base"
                     placeholder="Code de verification"
                   />
                 </label>
-                {/* Carte electeur */}
-                <label className="input input-bordered flex items-center gap-2">
-                  <FaKey size={14} color="#444" />
-                  <input
-                    type="text"
-                    // readOnly={showAdditionalInputs}
-                    style={{ userSelect: "none" }}
-                    className="grow text-sm md:text-base"
-                    placeholder="N° Carte Electeur"
-                  />
-                </label>
+               
               </div>
               <div className="flex flex-col gap-2">
                 <button
                   className=" px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-800"
-                  onClick={() => setIsModalOpen(!isModalOpen)}
+                  onClick={handleVerification}
                 >
                   Verifier
                 </button>
@@ -144,6 +170,16 @@ export default function Home() {
                   Annuler
                 </button>
               </div>
+              {error && (
+    <span className="text-red-600 text-sm">
+     Code de verification incorrect
+    </span>
+  )}
+   {parrainageSuccess && (
+    <span className="text-green-600 text-sm">
+     Parrainage reussit !!!
+    </span>
+  )}
             </div>
           </div>
         </div>
@@ -255,7 +291,7 @@ export default function Home() {
 
         <button
           className="click bg-[#19897F] text-white text-center py-4 px-6 md:text-lg text-sm rounded hover:bg-transparent hover:border hover:border-[#19897F] hover:text-[#19897F] hover:rounded-3xl transition-all duration-600"
-          onClick={() => setIsModalOpen(!isModalOpen)}
+          onClick={clickVerifierParrainage}
         >
           Vérifier Parrainage
         </button>

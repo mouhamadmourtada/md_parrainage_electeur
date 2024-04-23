@@ -1,10 +1,12 @@
 "use client";
-import { envoiCodeValidation } from "@/lib/query";
+import { envoiCodeValidation, validerParrainage } from "@/lib/query";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FaKey, FaRegUser } from "react-icons/fa";
 
 var response;
 export default function Parrainage() {
+  const router = useRouter() 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const infosParrainage = JSON.parse(localStorage.getItem("infosParrainage"));
   const candidats = JSON.parse(
@@ -14,10 +16,12 @@ export default function Parrainage() {
 
   const [inputValues, setInputValues] = useState({
     numElecteur: "",
-    cin: "",
+    code5: "",
     codeAuth: "",
   });
   const [error, setError] = useState(false);
+  const [nextStep, setNextStep] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const handleInputChange = (field, value) => {
     setInputValues((prev) => ({
@@ -32,20 +36,45 @@ export default function Parrainage() {
       setIsModalOpen(true)
       return;
     }
+    if(success){
+      try {
+        //Verification authentification
+        response = await validerParrainage({
+          numElecteur: infosParrainage?.numElecteur,
+          code5: inputValues?.code5,
+        },selectedCandidat?.ID);
+  
+        if (response?.data?.status != 200) {
+          //Cas d'erreur
+          setError(true);
+        } else {
+          //Cas de succes
+          
+          console.log("PARRAINAGE REUSSIT",response?.data)
+          router.push("/")
+          setSuccess(true)
+          setError(false);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+      return;
+    }
     try {
       //Verification authentification
       response = await envoiCodeValidation({
-        numElecteur: infosParrainage.numElecteur,
+        numElecteur: infosParrainage?.numElecteur,
         codeAuth: inputValues?.codeAuth,
-      },candidat?.ID);
+      },selectedCandidat?.ID);
 
       if (response?.data?.status != 200) {
         //Cas d'erreur
         setError(true);
       } else {
         //Cas de succes
+        
         console.log("REPONSE PARRAINAGE",response?.data)
-
+        setSuccess(true)
         setError(false);
       }
     } catch (error) {
@@ -65,13 +94,12 @@ export default function Parrainage() {
           >
             <div className="bg-white p-6 rounded-xl shadow-lg max-w-sm text-center flex flex-col gap-4">
               <p className="text-xl font-bold text-[#19897F]">
-                Vous souhaitez parrainer le candidat {candidat?.PRENOM + candidat?.NOM}
-                Envoi du code de validation sur votre email
+               {!success? `Vous souhaitez parrainer le candidat` + selectedCandidat?.PRENOM + selectedCandidat?.NOM:"Saisir le code recu pour confirmer le parrainage"} 
               </p>
               {/* Code de vérification */}
               <div className="flex flex-col gap-2">
                 {/* CODE AUTH */}
-                <label className="input input-bordered flex items-center gap-2">
+                {!success?(<label className="input input-bordered flex items-center gap-2">
                   <FaKey size={14} color="#444" />
                   <input
                     type={"text"}
@@ -82,14 +110,25 @@ export default function Parrainage() {
                     className="grow text-sm md:text-base"
                     placeholder="Code d'authentification"
                   />
-                </label>
+                </label>):(<label className="input input-bordered flex items-center gap-2">
+                  <FaKey size={14} color="#444" />
+                  <input
+                    type={"text"}
+                    value={inputValues?.code5}
+                    placeholder="******"
+                    onChange={(e) =>
+                      handleInputChange("code5", e.target.value)
+                    }
+                    className="grow text-sm md:text-base"
+                  />
+                </label>)}
               </div>
               <div className="flex flex-col gap-2">
                 <button
                   className=" px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-800"
-                  onClick={() => handleParrainage}
+                  onClick={() => handleParrainage(selectedCandidat)}
                 >
-                  Envoyer code de validation
+                  {!success? "Recevoir code de validation":"Parrainer"}
                 </button>
                 <button
                   className=" px-4 py-2 bg-red-600 text-white rounded hover:bg-red-500"
@@ -101,6 +140,11 @@ export default function Parrainage() {
               {error && (
                 <span className="text-red-600 text-sm">
                   Code auth incorrect
+                </span>
+              )}
+               {success && (
+                <span className="text-green-600 text-sm">
+                  Code envoyé avec succes
                 </span>
               )}
             </div>
