@@ -52,6 +52,7 @@ export default function Parrainage() {
           
           console.log("PARRAINAGE REUSSIT",response?.data)
           router.push("/")
+          localStorage.setItem("codeVerification",response?.data?.codeVerification)
           setSuccess(true)
           setError(false);
         }

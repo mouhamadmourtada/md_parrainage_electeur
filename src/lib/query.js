@@ -24,6 +24,9 @@ const validerParrainage = async (data,idCandidat)=>{
     return await axios.post(validerParrainageUrl+"/"+idCandidat,data)  
 }
 const verifierParrainage = async (data)=>{
+    console.log("DATA",data)
+    console.log("CODE VERIFICATION "+data?.codeVerification)
+    console.log("NUM ELECTEUR "+data?.numElecteur)
     return await axios.post(verifierParrainageUrl,data)  
 }
 

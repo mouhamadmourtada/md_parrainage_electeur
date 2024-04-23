@@ -38,7 +38,7 @@ export default function Home() {
 
       try {
         //Verification authentification
-          response = await verifierParrainage({numElecteur:localStorage.getItem("infosParrainage")?.numElecteur,codeVerification:inputValues?.codeVerification});
+          response = await verifierParrainage({numElecteur:inputValues?.numElecteur,codeVerification:inputValues?.codeVerification});
           console.log(response.data);
           if (response?.data?.status != 200) {
             //Cas d'erreur
@@ -46,9 +46,10 @@ export default function Home() {
             setError(true);
           } else {
             //Cas de succes: le parrainage est reussit
-            alert("PARRAINAGE REUSSIT")
-            setParrainageSuccess(true)
             setError(false);
+            setParrainageSuccess(true)
+            setIsModalOpen(false)
+            
           }
   
       } catch (error) {
@@ -124,7 +125,7 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center py-8 bg-[url('/bg-hero.jpg')] bg-cover relative">
-      {/* Modal Background Blurry */}
+      {/* Verifier parrainage modal */}
       {isModalOpen && (
         <div
           className="fixed inset-0 z-20 bg-black bg-opacity-50 backdrop-blur-lg"
@@ -140,6 +141,19 @@ export default function Home() {
               </p>
               {/* Code de vérification */}
               <div className="flex flex-col gap-2">
+              <label className="input input-bordered flex items-center gap-2">
+                  <FaKey size={14} color="#444" />
+                  <input
+                    type="text"
+                    value={inputValues?.numElecteur}
+                    onChange={(e) =>
+                      handleInputChange("numElecteur", e.target.value)
+                    }
+                    style={{ userSelect: "none" }}
+                    className="grow text-sm md:text-base"
+                    placeholder="N° Carte Electeur"
+                  />
+                </label>
                 <label className="input input-bordered flex items-center gap-2">
                   <FaIdCardAlt size={14} color="#444" />
 
@@ -154,6 +168,7 @@ export default function Home() {
                     placeholder="Code de verification"
                   />
                 </label>
+
                
               </div>
               <div className="flex flex-col gap-2">
@@ -273,6 +288,11 @@ export default function Home() {
         <p className="title font-bold text-2xl w-full text-center">
           Bienvenue sur <span className="text-[#19897F]">Sama Parrain !</span>
         </p>
+        {
+          parrainageSuccess && <p className="title font-bold text-xl w-full text-center text-teal-600">
+          Merci d'avoir effectuer votre devoir citoyen !
+        </p>
+        }
 
         <Link
           className="click bg-[#19897F] text-white text-center py-4 px-6 md:text-lg text-sm rounded hover:bg-transparent hover:border hover:border-[#19897F] hover:text-[#19897F] hover:rounded-3xl transition-all duration-600"
