@@ -245,7 +245,7 @@ export default function Parrainage() {
         setSuccess(true);
         setError(false);
         if (!success) {
-          router.push("/");
+          // router.push("/");
           localStorage.setItem("codeVerification", response?.data?.codeVerification);
         }
       }

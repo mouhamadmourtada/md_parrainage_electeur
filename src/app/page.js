@@ -48,7 +48,7 @@ export default function Home() {
             //Cas de succes: le parrainage est reussit
             setError(false);
             setParrainageSuccess(true)
-            setIsModalOpen(false)
+            // setIsModalOpen(false)
             
           }
   
@@ -121,7 +121,7 @@ export default function Home() {
       {
         opacity: 1,
         duration: 0.7,
-        stagger: 0.8, // Décalage de 0,2 secondes entre chaque animation
+        stagger: 0.5, // Décalage de 0,2 secondes entre chaque animation
       }
     );
   }, []);
@@ -129,7 +129,7 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center py-8 bg-[url('/bg-hero.jpg')] bg-cover relative">
       {/* Verifier parrainage modal */}
-      {isModalOpen && (
+      {isModalOpen  && (
         <div
           className="fixed inset-0 z-20 bg-black bg-opacity-50 backdrop-blur-lg"
           onClick={() => setIsModalOpen(!isModalOpen)}
@@ -142,66 +142,116 @@ export default function Home() {
               <p className="text-xl font-bold text-[#19897F]">
                 Vérifier votre parrainage
               </p>
-              {/* Code de vérification */}
-              <div className="flex flex-col gap-2">
-              <label className="input input-bordered flex items-center gap-2">
-                  <FaKey size={14} color="#444" />
-                  <input
-                    type="text"
-                    value={inputValues?.numElecteur}
-                    onChange={(e) =>
-                      handleInputChange("numElecteur", e.target.value)
-                    }
-                    style={{ userSelect: "none" }}
-                    className="grow text-sm md:text-base"
-                    placeholder="N° Carte Electeur"
-                  />
-                </label>
-                <label className="input input-bordered flex items-center gap-2">
-                  <FaIdCardAlt size={14} color="#444" />
+              
+              {
+                parrainageSuccess ? 
+                <div className="bg-gray-100 rounded-lg p-3 shadow-md">
+                  <h2 className="text-md font-bold text-teal-600 mb-4">Compte électeur déjà parrainé</h2>
+                  <div className="">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <p className="font-bold text-teal-600 mr-2">Nom:</p>
+                      <p className=" text-lg text-gray-800">{response?.data?.candidat?.nom}</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <p className="font-bold text-teal-600 mr-2">Prénom:</p>
+                      <p className="text-lg text-gray-800">{response?.data?.candidat?.prenom}</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <p className="font-bold text-teal-600 mr-2">Date de naissance:</p>
+                      <p className="text-lg text-gray-800">{response?.data?.candidat?.dateNaissance}</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <p className="font-bold text-teal-600 mr-2">Slogan:</p>
+                      <p className="text-lg text-gray-800">{response?.data?.candidat?.slogan}</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <p className="font-bold text-teal-600 mr-2">Couleur 1:</p>
+                      <div className="w-8 h-8 rounded-full">{response?.data?.candidat?.couleur1} </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <p className="font-bold text-teal-600 mr-2">Couleur 2:</p>
+                      <div className="w-8 h-8 rounded-full">{response?.data?.candidat?.couleur2}</div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <p className="font-bold text-teal-600 mr-2">Couleur 3:</p>
+                      <div className="w-8 h-8 rounded-full">{response?.data?.candidat?.couleur3}</div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <p className="font-bold text-teal-600 mr-2">Nom Parti:</p>
+                      <p className="text-lg text-gray-800">{response?.data?.candidat?.nomPartie}</p>
+                    </div>
+                  </div>
+                </div>
 
-                  <input
-                    type="text"
-                    style={{ userSelect: "none" }}
-                    value={inputValues?.codeVerification}
-                    onChange={(e) =>
-                      handleInputChange("codeVerification", e.target.value)
-                    }
-                    className="grow text-sm md:text-base"
-                    placeholder="Code de verification"
-                  />
-                </label>
+              
+                :
+                  <div>
+                    <div className="flex flex-col gap-2">
+                    <label className="input input-bordered flex items-center gap-2">
+                        <FaKey size={14} color="#444" />
+                        <input
+                          type="text"
+                          value={inputValues?.numElecteur}
+                          onChange={(e) =>
+                            handleInputChange("numElecteur", e.target.value)
+                          }
+                          style={{ userSelect: "none" }}
+                          className="grow text-sm md:text-base"
+                          placeholder="N° Carte Electeur"
+                        />
+                      </label>
+                      <label className="input input-bordered flex items-center gap-2">
+                        <FaIdCardAlt size={14} color="#444" />
 
-               
-              </div>
-              <div className="flex flex-col gap-2">
-                <button
-                  className=" px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-800"
-                  onClick={handleVerification}
-                >
-                  Verifier
-                </button>
-                <button
-                  className=" px-4 py-2 bg-red-600 text-white rounded hover:bg-red-500"
-                  onClick={() => setIsModalOpen(!isModalOpen)}
-                >
-                  Annuler
-                </button>
-              </div>
-              {error && (
-    <span className="text-red-600 text-sm">
-     Code de verification incorrect
-    </span>
-  )}
-   {parrainageSuccess && (
-    <span className="text-green-600 text-sm">
-     Parrainage reussit !!!
-    </span>
-  )}
+                        <input
+                          type="text"
+                          style={{ userSelect: "none" }}
+                          value={inputValues?.codeVerification}
+                          onChange={(e) =>
+                            handleInputChange("codeVerification", e.target.value)
+                          }
+                          className="grow text-sm md:text-base"
+                          placeholder="Code de verification"
+                        />
+                      </label>
+
+                    
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <button
+                        className=" px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-800"
+                        onClick={handleVerification}
+                      >
+                        Verifier
+                      </button>
+                      <button
+                        className=" px-4 py-2 bg-red-600 text-white rounded hover:bg-red-500"
+                        onClick={() => setIsModalOpen(!isModalOpen)}
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                    {error && (
+                      <span className="text-red-600 text-sm">
+                      Code de verification incorrect
+                      </span>
+                    )}
+                    {parrainageSuccess && (
+                      <span className="text-green-600 text-sm">
+                      Parrainage reussit !!!
+                      </span>
+                    )}
+
+                  </div>
+              }
+
+
             </div>
           </div>
         </div>
       )}
+
+      
       {/* Modal pour le parrainage*/}
       {isParrainerModalOpen && (
         <div

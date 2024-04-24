@@ -21,7 +21,7 @@ export default function Activation() {
     cin: "",
     nom: "",
     email: "",
-    phoneNumber: "",
+    telephone: "",
   });
 
   const handleInputChange = (field, value) => {
@@ -157,9 +157,9 @@ export default function Activation() {
               <FaPhoneAlt size={14} color="#444" />
               <input
                 type="text"
-                value={inputValues.phoneNumber}
+                value={inputValues.telephone}
                 onChange={(e) =>
-                  handleInputChange("phoneNumber", e.target.value)
+                  handleInputChange("telephone", e.target.value)
                 }
                 class="grow text-sm md:text-base"
                 placeholder="Numéro de téléphone"
