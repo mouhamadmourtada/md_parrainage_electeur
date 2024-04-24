@@ -70,9 +70,12 @@ export default function Home() {
           setError(true);
         } else {
           //Cas de succes: passer au formulaire suivant
-          localStorage.setItem("infosParrainage",JSON.stringify({...response?.data,...inputValues}))
-          router.push("/parrainage")
-          setError(false);
+          // Code utilisant localStorage
+          if (typeof window !== 'undefined') {
+            localStorage.setItem("infosParrainage",JSON.stringify({...response?.data,...inputValues}))
+            router.push("/parrainage")
+            setError(false);
+          }
         }
       }else{
       //Verification authentification
